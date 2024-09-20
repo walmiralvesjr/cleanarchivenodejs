@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpeza de Arquivos Antigos</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Limpeza de Arquivos Antigos</h1>
+        <p>Escolha um diretório para verificar e apagar arquivos com mais de 7 dias de existência.</p>
+
+        <input type="file" id="directoryPicker" webkitdirectory directory multiple>
+        <button onclick="limparArquivos()">Executar Limpeza</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function limparArquivos() {
+            const directoryInput = document.getElementById('directoryPicker');
+            const files = Array.from(directoryInput.files).map(file => file.webkitRelativePath);
+
+            if (files.length === 0) {
+                alert('Selecione um diretório!');
+                return;
+            }
+
+            fetch('/limpar-arquivos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ files }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    let resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = ''; // Limpa os resultados anteriores
+
+                    data.forEach(fileInfo => {
+                        let fileElem = document.createElement('p');
+                        fileElem.textContent = `Arquivo: ${fileInfo.fileName} - Status: ${fileInfo.status}`;
+                        resultDiv.appendChild(fileElem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao limpar arquivos:', error);
+                });
+        }
+    </script>
+</body>
+</html>
